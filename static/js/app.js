@@ -12,6 +12,10 @@ const STRAT_PARAMS = {
     bollinger: [{key:"period",label:"BB Period",val:20},{key:"num_std",label:"Std Dev",val:2.0}],
     macd: [{key:"fast",label:"Fast EMA",val:12},{key:"slow",label:"Slow EMA",val:26},{key:"signal_period",label:"Signal",val:9}],
     mean_reversion: [{key:"lookback",label:"Lookback",val:30},{key:"entry_z",label:"Entry Z",val:2.0},{key:"exit_z",label:"Exit Z",val:0.5}],
+    trend_following: [{key:"ma_period",label:"MA Period",val:200},{key:"atr_multiplier",label:"ATR Stop ×",val:3.0}],
+    daily_reversion: [{key:"long_threshold",label:"Long Threshold %",val:-3.0},{key:"short_threshold",label:"Short Threshold %",val:3.0},{key:"hold_bars",label:"Hold Bars",val:3}],
+    regime_detection: [{key:"fast_ma",label:"Fast MA",val:50},{key:"slow_ma",label:"Slow MA",val:200}],
+    volatility_breakout: [{key:"atr_period",label:"ATR Period",val:14},{key:"lookback",label:"Lookback",val:20},{key:"atr_squeeze_ratio",label:"Squeeze Ratio",val:0.75}],
 };
 
 let equityChart=null, drawdownChart=null, signalsChart=null, compareEquityChart=null;

@@ -43,11 +43,19 @@
                     <div class="form-group">
                         <label>Strategy</label>
                         <select id="cfg-strategy">
-                            <option value="sma_crossover">SMA Crossover</option>
-                            <option value="rsi">RSI Mean Reversion</option>
-                            <option value="bollinger">Bollinger Bands</option>
-                            <option value="macd">MACD Crossover</option>
-                            <option value="mean_reversion">Mean Reversion (Z-Score)</option>
+                            <optgroup label="Classic">
+                                <option value="sma_crossover">SMA Crossover</option>
+                                <option value="rsi">RSI Mean Reversion</option>
+                                <option value="bollinger">Bollinger Bands</option>
+                                <option value="macd">MACD Crossover</option>
+                                <option value="mean_reversion">Mean Reversion (Z-Score)</option>
+                            </optgroup>
+                            <optgroup label="Advanced">
+                                <option value="trend_following">Trend Following (200d MA)</option>
+                                <option value="daily_reversion">Daily Return Reversion</option>
+                                <option value="regime_detection">Regime Detection (4-State)</option>
+                                <option value="volatility_breakout">Volatility Breakout (ATR)</option>
+                            </optgroup>
                         </select>
                     </div>
                     <div class="form-group">

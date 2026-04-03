@@ -8,15 +8,25 @@ from strategies.rsi_strategy import RSIStrategy
 from strategies.bollinger_strategy import BollingerStrategy
 from strategies.macd_strategy import MACDStrategy
 from strategies.mean_reversion import MeanReversionStrategy
+from strategies.trend_following import TrendFollowingStrategy
+from strategies.daily_return_reversion import DailyReturnReversion
+from strategies.regime_detection import RegimeDetectionStrategy
+from strategies.volatility_breakout import VolatilityBreakoutStrategy
 
 app = Flask(__name__)
 
 STRATEGIES = {
+    # ── Classic Strategies ──
     "sma_crossover": {"class": SMACrossover, "params": {"fast_period": 20, "slow_period": 50}},
     "rsi": {"class": RSIStrategy, "params": {"period": 14, "oversold": 30, "overbought": 70}},
     "bollinger": {"class": BollingerStrategy, "params": {"period": 20, "num_std": 2.0}},
     "macd": {"class": MACDStrategy, "params": {"fast": 12, "slow": 26, "signal_period": 9}},
     "mean_reversion": {"class": MeanReversionStrategy, "params": {"lookback": 30, "entry_z": 2.0, "exit_z": 0.5}},
+    # ── Advanced Strategies (Composer-inspired) ──
+    "trend_following": {"class": TrendFollowingStrategy, "params": {"ma_period": 200, "atr_multiplier": 3.0}},
+    "daily_reversion": {"class": DailyReturnReversion, "params": {"long_threshold": -3.0, "short_threshold": 3.0, "hold_bars": 3}},
+    "regime_detection": {"class": RegimeDetectionStrategy, "params": {"fast_ma": 50, "slow_ma": 200}},
+    "volatility_breakout": {"class": VolatilityBreakoutStrategy, "params": {"atr_period": 14, "lookback": 20, "atr_squeeze_ratio": 0.75}},
 }
 
 
