@@ -59,7 +59,15 @@ class BacktestResult:
     trades: list = field(default_factory=list)
     signals: list = field(default_factory=list)  # for charting
 
+    @staticmethod
+    def _safe(v, decimals=2):
+        """Convert inf/nan to JSON-safe values."""
+        if isinstance(v, float) and (math.isinf(v) or math.isnan(v)):
+            return 9999.99 if v > 0 else -9999.99
+        return round(v, decimals)
+
     def to_dict(self) -> dict:
+        s = self._safe
         return {
             "strategy_name": self.strategy_name,
             "symbol": self.symbol,
@@ -67,22 +75,22 @@ class BacktestResult:
             "start_date": self.start_date,
             "end_date": self.end_date,
             "initial_capital": self.initial_capital,
-            "final_capital": round(self.final_capital, 2),
-            "total_return_pct": round(self.total_return_pct, 2),
-            "buy_hold_return_pct": round(self.buy_hold_return_pct, 2),
+            "final_capital": s(self.final_capital),
+            "total_return_pct": s(self.total_return_pct),
+            "buy_hold_return_pct": s(self.buy_hold_return_pct),
             "total_trades": self.total_trades,
             "winning_trades": self.winning_trades,
             "losing_trades": self.losing_trades,
-            "win_rate": round(self.win_rate, 2),
-            "avg_win_pct": round(self.avg_win_pct, 2),
-            "avg_loss_pct": round(self.avg_loss_pct, 2),
-            "profit_factor": round(self.profit_factor, 2),
-            "max_drawdown_pct": round(self.max_drawdown_pct, 2),
+            "win_rate": s(self.win_rate),
+            "avg_win_pct": s(self.avg_win_pct),
+            "avg_loss_pct": s(self.avg_loss_pct),
+            "profit_factor": s(self.profit_factor),
+            "max_drawdown_pct": s(self.max_drawdown_pct),
             "max_drawdown_duration": self.max_drawdown_duration,
-            "sharpe_ratio": round(self.sharpe_ratio, 3),
-            "sortino_ratio": round(self.sortino_ratio, 3),
-            "calmar_ratio": round(self.calmar_ratio, 3),
-            "avg_bars_held": round(self.avg_bars_held, 1),
+            "sharpe_ratio": s(self.sharpe_ratio, 3),
+            "sortino_ratio": s(self.sortino_ratio, 3),
+            "calmar_ratio": s(self.calmar_ratio, 3),
+            "avg_bars_held": s(self.avg_bars_held, 1),
             "equity_curve": self.equity_curve,
             "drawdown_curve": self.drawdown_curve,
             "trades": [

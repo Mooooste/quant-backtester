@@ -99,7 +99,14 @@ def api_compare():
             continue
         strategy = strat_info["class"](**strat_info["params"])
         result = bt.run(strategy, klines, symbol, interval)
-        results.append(result.to_dict())
+        d = result.to_dict()
+        # Thin equity curves for compare (every Nth point to keep payload small)
+        step = max(1, len(d["equity_curve"]) // 200)
+        d["equity_curve"] = d["equity_curve"][::step]
+        d["drawdown_curve"] = d["drawdown_curve"][::step]
+        d["signals"] = []  # Not needed for compare view
+        d["trades"] = d["trades"][:20]  # Cap trade list
+        results.append(d)
 
     return jsonify({"results": results, "klines_count": len(klines)})
 
