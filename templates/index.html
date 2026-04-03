@@ -1,0 +1,208 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Quant Backtester — Avenir</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+</head>
+<body>
+    <nav class="sidebar">
+        <div class="sidebar-brand">
+            <div class="brand-icon">Q</div>
+            <span>Backtester</span>
+        </div>
+        <ul class="sidebar-nav">
+            <li class="nav-item active" data-tab="single">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>
+                <span>Single Test</span>
+            </li>
+            <li class="nav-item" data-tab="compare">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg>
+                <span>Compare</span>
+            </li>
+            <li class="nav-item" data-tab="trades">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2"/><path d="M3 9h18M9 3v18"/></svg>
+                <span>Trade Log</span>
+            </li>
+        </ul>
+    </nav>
+
+    <main class="main-content">
+        <header class="header">
+            <h1 id="page-title">Backtest</h1>
+            <div id="status-badge" class="status-badge"></div>
+        </header>
+
+        <!-- ═══ Single Test Tab ═══ -->
+        <section class="tab-content active" id="tab-single">
+            <!-- Config Panel -->
+            <div class="card config-card">
+                <div class="config-grid">
+                    <div class="form-group">
+                        <label>Strategy</label>
+                        <select id="cfg-strategy">
+                            <option value="sma_crossover">SMA Crossover</option>
+                            <option value="rsi">RSI Mean Reversion</option>
+                            <option value="bollinger">Bollinger Bands</option>
+                            <option value="macd">MACD Crossover</option>
+                            <option value="mean_reversion">Mean Reversion (Z-Score)</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label>Symbol</label>
+                        <select id="cfg-symbol">
+                            {% for s in symbols %}
+                            <option value="{{ s }}" {% if s == 'BTCUSDT' %}selected{% endif %}>{{ s }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label>Interval</label>
+                        <select id="cfg-interval">
+                            <option value="1h">1 Hour</option>
+                            <option value="4h">4 Hours</option>
+                            <option value="1d" selected>1 Day</option>
+                            <option value="1w">1 Week</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label>Period (days)</label>
+                        <input type="number" id="cfg-days" value="365" min="30" max="1825">
+                    </div>
+                    <div class="form-group">
+                        <label>Capital ($)</label>
+                        <input type="number" id="cfg-capital" value="100000" min="1000">
+                    </div>
+                    <div class="form-group">
+                        <label>Commission (%)</label>
+                        <input type="number" id="cfg-commission" value="0.1" step="0.01" min="0">
+                    </div>
+                </div>
+
+                <!-- Strategy params -->
+                <div id="strategy-params" class="strategy-params"></div>
+
+                <button class="btn btn-primary btn-run" id="btn-run">Run Backtest</button>
+            </div>
+
+            <!-- Results -->
+            <div id="results-container" style="display:none;">
+                <!-- Summary Cards -->
+                <div class="summary-cards">
+                    <div class="card summary-card">
+                        <span class="card-label">Total Return</span>
+                        <span class="card-value" id="r-return">--</span>
+                        <span class="card-sub" id="r-vs-hold">vs Buy & Hold</span>
+                    </div>
+                    <div class="card summary-card">
+                        <span class="card-label">Sharpe Ratio</span>
+                        <span class="card-value" id="r-sharpe">--</span>
+                        <span class="card-sub" id="r-sortino">Sortino: --</span>
+                    </div>
+                    <div class="card summary-card">
+                        <span class="card-label">Win Rate</span>
+                        <span class="card-value" id="r-winrate">--</span>
+                        <span class="card-sub" id="r-trades">0 trades</span>
+                    </div>
+                    <div class="card summary-card">
+                        <span class="card-label">Max Drawdown</span>
+                        <span class="card-value" id="r-drawdown">--</span>
+                        <span class="card-sub" id="r-calmar">Calmar: --</span>
+                    </div>
+                </div>
+
+                <!-- Detailed Stats -->
+                <div class="card">
+                    <h3>Performance Metrics</h3>
+                    <div class="metrics-grid" id="metrics-grid"></div>
+                </div>
+
+                <!-- Equity Curve -->
+                <div class="card">
+                    <h3>Equity Curve</h3>
+                    <div class="chart-container"><canvas id="equity-chart"></canvas></div>
+                </div>
+
+                <!-- Drawdown -->
+                <div class="card">
+                    <h3>Drawdown</h3>
+                    <div class="chart-container" style="height:200px;"><canvas id="drawdown-chart"></canvas></div>
+                </div>
+
+                <!-- Price + Signals -->
+                <div class="card">
+                    <h3>Price & Trade Signals</h3>
+                    <div class="chart-container"><canvas id="signals-chart"></canvas></div>
+                </div>
+            </div>
+        </section>
+
+        <!-- ═══ Compare Tab ═══ -->
+        <section class="tab-content" id="tab-compare">
+            <div class="card config-card">
+                <div class="config-grid">
+                    <div class="form-group">
+                        <label>Symbol</label>
+                        <select id="cmp-symbol">
+                            {% for s in symbols %}
+                            <option value="{{ s }}" {% if s == 'BTCUSDT' %}selected{% endif %}>{{ s }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label>Period (days)</label>
+                        <input type="number" id="cmp-days" value="365" min="30">
+                    </div>
+                    <div class="form-group">
+                        <label>Capital ($)</label>
+                        <input type="number" id="cmp-capital" value="100000" min="1000">
+                    </div>
+                </div>
+                <button class="btn btn-primary btn-run" id="btn-compare">Compare All Strategies</button>
+            </div>
+
+            <div id="compare-container" style="display:none;">
+                <div class="card">
+                    <h3>Strategy Comparison</h3>
+                    <div class="table-wrap">
+                        <table class="data-table">
+                            <thead>
+                                <tr>
+                                    <th>Strategy</th><th>Return</th><th>Sharpe</th><th>Win Rate</th>
+                                    <th>Max DD</th><th>Trades</th><th>Profit Factor</th><th>vs B&H</th>
+                                </tr>
+                            </thead>
+                            <tbody id="compare-table"></tbody>
+                        </table>
+                    </div>
+                </div>
+                <div class="card">
+                    <h3>Equity Curves Comparison</h3>
+                    <div class="chart-container"><canvas id="compare-equity-chart"></canvas></div>
+                </div>
+            </div>
+        </section>
+
+        <!-- ═══ Trade Log Tab ═══ -->
+        <section class="tab-content" id="tab-trades">
+            <div class="card">
+                <h3>Trade History</h3>
+                <div class="table-wrap">
+                    <table class="data-table">
+                        <thead>
+                            <tr><th>#</th><th>Side</th><th>Entry Date</th><th>Exit Date</th><th>Entry Price</th><th>Exit Price</th><th>P&L</th><th>P&L %</th><th>Bars</th></tr>
+                        </thead>
+                        <tbody id="trade-log-table">
+                            <tr><td colspan="9" class="empty-state">Run a backtest to see trades</td></tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <script src="{{ url_for('static', filename='js/app.js') }}"></script>
+</body>
+</html>
