@@ -2,7 +2,7 @@
 
 A professional-grade quantitative trading backtesting engine with a web dashboard. Built for evaluating trading strategies against real historical market data from Binance.
 
-Designed for the quant research workflow at [Avenir Group](https://avenirx.com).
+Designed for a quant research workflow
 
 ## Features
 
